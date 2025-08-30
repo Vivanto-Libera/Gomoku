@@ -9,7 +9,7 @@ public partial class Tile : TextureRect
 		O,
 		X,
 	}
-	private State state;
+	private State state = State.None;
 	public void SetState(State newState) 
 	{
 		state = newState;
@@ -24,8 +24,8 @@ public partial class Tile : TextureRect
 				break;
 			case State.X:
 				Texture = GD.Load<Texture2D>("X.png");
-                GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, true);
-                break;
+				GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, true);
+				break;
 		}
 	}
 	public State GetState()
