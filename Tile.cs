@@ -3,6 +3,8 @@ using System;
 
 public partial class Tile : TextureRect
 {
+	[Signal]
+	public delegate void PlayerPressedEventHandler();
 	public enum State
 	{
 		None,
@@ -24,16 +26,21 @@ public partial class Tile : TextureRect
 				break;
 			case State.X:
 				Texture = GD.Load<Texture2D>("X.png");
-                SetButtonDisable(true);
-                break;
+				SetButtonDisable(true);
+				break;
 		}
 	}
 	public void SetButtonDisable(bool isDisable) 
 	{
-        GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, isDisable);
-    }
+		GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, isDisable);
+	}
 	public State GetState()
 	{
 		return state;
+	}
+	public void OnButtonPressed() 
+	{
+		SetState(State.X);
+		EmitSignal(SignalName.PlayerPressed);
 	}
 }

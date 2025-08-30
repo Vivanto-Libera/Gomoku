@@ -20,13 +20,13 @@ public partial class Page : TextureRect
 	}
 	public void setAllDisable(bool isDisable) 
 	{
-        for (int i = 0; i < 17; i++)
-        {
-            char row = (char)((int)'A' + i);
-            for (int j = 0; j < 18; j++)
-            {
+		for (int i = 0; i < 17; i++)
+		{
+			char row = (char)((int)'A' + i);
+			for (int j = 0; j < 18; j++)
+			{
 				tiles[i, j].SetButtonDisable(isDisable);
-            }
-        }
-    }
+			}
+		}
+	}
 }

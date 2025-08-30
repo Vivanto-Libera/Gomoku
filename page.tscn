@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://b6palsw38v6ie"]
+[gd_scene load_steps=4 format=3 uid="uid://b6palsw38v6ie"]
 
 [ext_resource type="Texture2D" uid="uid://ciw530bhftkdo" path="res://Image/Page.png" id="1_7tx1s"]
 [ext_resource type="PackedScene" uid="uid://dac46wdwtm6kd" path="res://tile.tscn" id="2_phrhr"]
+[ext_resource type="Script" uid="uid://dm6tef0i4vf7y" path="res://Page.cs" id="2_sy6uq"]
 
 [node name="Page" type="TextureRect"]
 offset_top = 630.0
@@ -9,6 +10,7 @@ offset_right = 630.0
 offset_bottom = 1521.0
 rotation = 4.71239
 texture = ExtResource("1_7tx1s")
+script = ExtResource("2_sy6uq")
 
 [node name="A0" parent="." instance=ExtResource("2_phrhr")]
 layout_mode = 0
