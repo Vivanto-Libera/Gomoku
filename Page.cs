@@ -85,6 +85,7 @@ public class AlphaBeta
 
     const int INFINITY = 10000;
     Point point = new Point(-1, -1);
+    Point lastMove = new Point();
     int maxValue = -INFINITY;
     public Tile.State[,] board = new Tile.State[17, 18];
     private const int DEPTH = 8;
@@ -105,7 +106,7 @@ public class AlphaBeta
     }
     private int MaxValue(int alpha, int beta, bool isFirst, int dep)
     {
-        WhoWin who = JudgeWhoWin();
+        WhoWin who = JudgeWhoWin(lastMove.row, lastMove.column);
         if (who == WhoWin.XWin)
         {
             return -5000;
@@ -128,6 +129,7 @@ public class AlphaBeta
                     continue;
                 }
                 board[i, j] = O;
+                lastMove = new Point(i, j);
                 int newV = MinValue(alpha, beta, dep + 1);
                 if (isFirst)
                 {
@@ -151,7 +153,7 @@ public class AlphaBeta
     }
     private int MinValue(int alpha, int beta, int dep)
     {
-        WhoWin who = JudgeWhoWin();
+        WhoWin who = JudgeWhoWin(lastMove.row, lastMove.column);
         if (who == WhoWin.OWin)
         {
             return 5000;
@@ -174,6 +176,7 @@ public class AlphaBeta
                     continue;
                 }
                 board[i, j] = X;
+                lastMove = new Point(i, j);
                 int newV = MinValue(alpha, beta, dep + 1);
                 if (newV <= alpha)
                 {
@@ -190,8 +193,228 @@ public class AlphaBeta
     private int Evaluate()
     {
         int v = 0;
-        
+        for(int column = 0; column < 18; column++) 
+        {
+            bool isUpNone = false;
+            bool isDownNone = false;
+            for(int row = 0; row < 17; row++) 
+            {
+                isDownNone = false;
+                if (board[row, column] == None) 
+                {
+                    isUpNone = true;
+                    continue;
+                }
+                int connect = 1;
+                for(int k = 1;k < 5; k++) 
+                {
+                    if(row + k > 16) 
+                    {
+                        row = 16;
+                        v += WhosScore(board[row, column], CountSocore(connect, isUpNone, isDownNone));
+                        break;
+                    }
+                    if (board[row, column] == board[row + k, column]) 
+                    {
+                        connect++;
+                    }
+                    else 
+                    {
+                        if (board[row + k, column] == None) 
+                        {
+                            isDownNone = true;
+                        }
+                        row = row + k - 1;
+                        isUpNone = false;
+                        v += WhosScore(board[row, column], CountSocore(connect, isUpNone, isDownNone));
+                        break;
+                    }
+                }
+            }
+        }
+        for (int row = 0; row < 17; row++)
+        {
+            bool isLeftNone = false;
+            bool isRightNone = false;
+            for (int column = 0; column < 18; column++)
+            {
+                isRightNone = false;
+                if (board[row, column] == None)
+                {
+                    isLeftNone = true;
+                    continue;
+                }
+                int connect = 1;
+                for (int k = 1; k < 5; k++)
+                {
+                    if (column + k > 17)
+                    {
+                        column = 17;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                        break;
+                    }
+                    if (board[row, column] == board[row, column + k])
+                    {
+                        connect++;
+                    }
+                    else
+                    {
+                        if (board[row, column + k] == None)
+                        {
+                            isRightNone = true;
+                        }
+                        column = column + k - 1;
+                        isLeftNone = false;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                        break;
+                    }
+                }
+            }
+        }
+        for(int column = 0; column < 13; column++) 
+        {
+            for(int row = 0; row < 12; row++) 
+            {
+                for (int i = row; i < 17; i++)
+                {
+                    bool isLeftNone = false;
+                    bool isRightNone = false;
+                    for (int j = column; j < 18; j++)
+                    {
+                        isRightNone = false;
+                        if (board[i, j] == None)
+                        {
+                            isLeftNone = true;
+                            continue;
+                        }
+                        int connect = 1;
+                        for (int k = 1; k < 5; k++)
+                        {
+                            if (j + k > 17 || i + k > 16)
+                            {
+                                j = 17;
+                                v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                                break;
+                            }
+                            if (board[i, j] == board[i + k, j + k])
+                            {
+                                connect++;
+                            }
+                            else
+                            {
+                                if (board[i + k, j + k] == None)
+                                {
+                                    isRightNone = true;
+                                }
+                                j = j + k - 1;
+                                i = i + k - 1;
+                                isLeftNone = false;
+                                v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (int column = 17; column > 5; column--)
+        {
+            for (int row = 0; row < 12; row++)
+            {
+                for (int i = row; i < 17; i++)
+                {
+                    bool isLeftNone = false;
+                    bool isRightNone = false;
+                    for (int j = column; j >= 0; j--)
+                    {
+                        isRightNone = false;
+                        if (board[i, j] == None)
+                        {
+                            isLeftNone = true;
+                            continue;
+                        }
+                        int connect = 1;
+                        for (int k = 1; k < 5; k++)
+                        {
+                            if (j - k < 0 || i + k > 16)
+                            {
+                                j = 0;
+                                v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                                break;
+                            }
+                            if (board[i, j] == board[i + k, j - k])
+                            {
+                                connect++;
+                            }
+                            else
+                            {
+                                if (board[i + k, j - k] == None)
+                                {
+                                    isRightNone = true;
+                                }
+                                j = j + k + 1;
+                                i = i + k - 1;
+                                isLeftNone = false;
+                                v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return v;
+    }
+    private int CountSocore(int connect, bool isUpNone, bool isDownNone) 
+    {
+        if(connect == 2) 
+        {
+            if (isUpNone && isDownNone) 
+            {
+                return 3;
+            }
+            else if(isUpNone || isDownNone) 
+            {
+                return 1;
+            }
+            return 0;
+        }
+        else if(connect == 3) 
+        {
+            if (isUpNone && isDownNone)
+            {
+                return 50;
+            }
+            else if (isUpNone || isDownNone)
+            {
+                return 5;
+            }
+            return 0;
+        }
+        else if (connect == 4)
+        {
+            if (isUpNone && isDownNone)
+            {
+                return 300;
+            }
+            else if (isUpNone || isDownNone)
+            {
+                return 100;
+            }
+            return 0;
+        }
+        return 0;
+    }
+    private int WhosScore(Tile.State who, int score) 
+    {
+        if(who == O) 
+        {
+            return score;
+        }
+        else 
+        {
+            return -score;
+        }
     }
     public WhoWin JudgeWhoWin(int row, int column)
     {
