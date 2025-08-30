@@ -25,6 +25,6 @@ public partial class Main : Node
 	{
 		GetNode<Button>("First").Hide();
 		GetNode<Button>("Second").Hide();
-		AIMove();
+		page.CallAIMove();
 	}
 }
