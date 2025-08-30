@@ -34,8 +34,6 @@ public partial class Main : Node
 	public override void _Ready()
 	{
 		page = GetNode<Page>("Page");
-		int score = new AlphaBeta(page.tiles).Evaluate();
-		GD.Print(score);
 		GameStart();
 	}
 	public void OnFirstPressed()
