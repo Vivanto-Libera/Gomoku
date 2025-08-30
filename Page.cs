@@ -1,8 +1,11 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
+using System.Linq;
 using System.Runtime.Intrinsics.Arm;
+using System.Threading.Tasks;
 using static Tile.State;
 
 public partial class Page : TextureRect
@@ -12,9 +15,9 @@ public partial class Page : TextureRect
 
 	public Tile[,] tiles = new Tile[17, 18];
 	public AlphaBeta.Point lastMove = new AlphaBeta.Point(-1, -1);
-	public void CallAIMove()
+	public async void CallAIMove()
 	{
-		CallDeferred(nameof(AIMove));
+		await Task.Run(() => AIMove());
 	}
 	public void AIMove()
 	{
@@ -106,11 +109,18 @@ public class AlphaBeta
 			row = row1;
 			column = column1;
 		}
+		public Point(Point point) 
+		{
+			row = point.row;
+			column = point.column;
+		}
 	}
 
+	int[] BFSX = { 1, 0, -1, 0, 1, 1, -1, -1};
+	int[] BFSY = { 0, 1, 0, -1, 1, -1, 1, -1 };
 	const int INFINITY = 10000;
 	Point point = new Point(-1, -1);
-	Point lastMove = new Point();
+	Point lastMove = new Point(8, 8);
 	int maxValue = -INFINITY;
 	public Tile.State[,] board = new Tile.State[17, 18];
 	private const int DEPTH = 2;
@@ -145,35 +155,51 @@ public class AlphaBeta
 			return Evaluate();
 		}
 		int v = -INFINITY;
-		for (int i = 0; i < 17; i++)
+		Queue<Point> points = new Queue<Point>();
+		points.Enqueue(new Point(lastMove));
+		bool[,] searched = new bool[17, 18];
+		while(points.Count != 0) 
 		{
-			for (int j = 0; j < 18; j++)
+			Point aPoint = points.Dequeue();
+			if (searched[aPoint.row, aPoint.column]) 
 			{
-				if (board[i, j] != None) 
+				continue;
+			}
+			searched[aPoint.row, aPoint.column] = true;
+            for(int i = 0; i < 8; i++) 
+			{
+				Point newPoint = new Point(aPoint.row + BFSX[i], aPoint.column + BFSY[i]);
+				if (newPoint.row < 0 || newPoint.row >= 17 || newPoint.column < 0 || newPoint.column >= 18) 
 				{
 					continue;
 				}
-				board[i, j] = O;
-				lastMove = new Point(i, j);
-				int newV = MinValue(alpha, beta, dep + 1);
-				if (isFirst)
-				{
-					if (newV > maxValue)
-					{
-						point = new Point(i, j);
-						maxValue = newV;
-					}
-				}
-				if (newV >= beta)
-				{
-					board[i, j] = None;
-					return newV;
-				}
-				v = newV > v ? newV : v;
-				alpha = v > alpha ? v : alpha;
-				board[i, j] = None;
+				points.Enqueue(newPoint);
 			}
-		}
+            if (board[aPoint.row, aPoint.column] != None)
+            {
+                continue;
+            }
+            board[aPoint.row, aPoint.column] = O;
+            lastMove = new Point(aPoint);
+            int newV = MinValue(alpha, beta, dep + 1);
+            if (isFirst)
+            {
+                if (newV > maxValue)
+                {
+                    point = new Point(aPoint);
+                    maxValue = newV;
+                }
+            }
+            if (newV >= beta)
+            {
+                board[aPoint.row, aPoint.column] = None;
+                return newV;
+            }
+            v = newV > v ? newV : v;
+            alpha = v > alpha ? v : alpha;
+            board[aPoint.row, aPoint.column] = None;
+        }
+		
 		return v;
 	}
 	private int MinValue(int alpha, int beta, int dep)
@@ -192,27 +218,46 @@ public class AlphaBeta
 			return Evaluate();
 		}
 		int v = INFINITY;
-		for (int i = 0; i < 17; i++)
+        Queue<Point> points = new Queue<Point>();
+        points.Enqueue(new Point(lastMove));
+        bool[,] searched = new bool[17, 18];
+		while (points.Count != 0)
 		{
-			for (int j = 0; j < 18; j++)
+			Point aPoint = points.Dequeue();
+			if (searched[aPoint.row, aPoint.column])
 			{
-				if (board[i, j] != None)
+				continue;
+			}
+			searched[aPoint.row, aPoint.column] = true;
+			for (int i = 0; i < 8; i++)
+			{
+				Point newPoint = new Point(aPoint.row + BFSX[i], aPoint.column + BFSY[i]);
+				if (newPoint.row < 0 || newPoint.row >= 17 || newPoint.column < 0 || newPoint.column >= 18)
 				{
 					continue;
 				}
-				board[i, j] = X;
-				lastMove = new Point(i, j);
-				int newV = MinValue(alpha, beta, dep + 1);
-				if (newV <= alpha)
-				{
-					board[i, j] = None;
-					return newV;
-				}
-				v = newV < v ? newV : v;
-				beta = v < beta ? v : beta;
-				board[i, j] = None;
+				points.Enqueue(newPoint);
 			}
-		}
+			if (board[aPoint.row, aPoint.column] != None)
+			{
+				continue;
+			}
+            if (board[aPoint.row, aPoint.column] != None)
+            {
+                continue;
+            }
+            board[aPoint.row, aPoint.column] = X;
+            lastMove = new Point(aPoint);
+            int newV = MinValue(alpha, beta, dep + 1);
+            if (newV <= alpha)
+            {
+                board[aPoint.row, aPoint.column] = None;
+                return newV;
+            }
+            v = newV < v ? newV : v;
+            beta = v < beta ? v : beta;
+            board[aPoint.row, aPoint.column] = None;
+        }
 		return v;
 	}
 	private int Evaluate()
