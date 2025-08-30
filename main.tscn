@@ -52,7 +52,7 @@ theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 32
 text = "后手"
 
-[node name="Messgae" type="Label" parent="."]
+[node name="Message" type="Label" parent="."]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5

@@ -124,6 +124,8 @@ public class AlphaBeta
 	int maxValue = -INFINITY;
 	public Tile.State[,] board = new Tile.State[17, 18];
 	private const int DEPTH = 2;
+	private int[] RowStone = new int[17];
+	private int[] ColumnStone = new int[18];
 	public AlphaBeta(Tile[,] tiles)
 	{
 		for (int i = 0; i < 17; i++)
@@ -131,6 +133,11 @@ public class AlphaBeta
 			for (int j = 0; j < 18; j++)
 			{
 				board[i, j] = tiles[i, j].GetState();
+				if (board[i, j] != None) 
+				{
+					RowStone[i]++;
+					ColumnStone[j]++;
+				}
 			}
 		}
 	}
@@ -166,7 +173,7 @@ public class AlphaBeta
 				continue;
 			}
 			searched[aPoint.row, aPoint.column] = true;
-            for(int i = 0; i < 8; i++) 
+			for(int i = 0; i < 8; i++) 
 			{
 				Point newPoint = new Point(aPoint.row + BFSX[i], aPoint.column + BFSY[i]);
 				if (newPoint.row < 0 || newPoint.row >= 17 || newPoint.column < 0 || newPoint.column >= 18) 
@@ -175,31 +182,36 @@ public class AlphaBeta
 				}
 				points.Enqueue(newPoint);
 			}
-            if (board[aPoint.row, aPoint.column] != None)
-            {
-                continue;
-            }
-            board[aPoint.row, aPoint.column] = O;
-            lastMove = new Point(aPoint);
-            int newV = MinValue(alpha, beta, dep + 1);
-            if (isFirst)
-            {
-                if (newV > maxValue)
-                {
-                    point = new Point(aPoint);
-                    maxValue = newV;
-                }
-            }
-            if (newV >= beta)
-            {
-                board[aPoint.row, aPoint.column] = None;
-                return newV;
-            }
-            v = newV > v ? newV : v;
-            alpha = v > alpha ? v : alpha;
-            board[aPoint.row, aPoint.column] = None;
-        }
-		
+			if (board[aPoint.row, aPoint.column] != None)
+			{
+				continue;
+			}
+			board[aPoint.row, aPoint.column] = O;
+			RowStone[aPoint.row]++;
+			ColumnStone[aPoint.column]++;
+			lastMove = new Point(aPoint);
+			int newV = MinValue(alpha, beta, dep + 1);
+			if (isFirst)
+			{
+				if (newV > maxValue)
+				{
+					point = new Point(aPoint);
+					maxValue = newV;
+				}
+			}
+			if (newV >= beta)
+			{
+				board[aPoint.row, aPoint.column] = None;
+				RowStone[aPoint.row]--;
+				ColumnStone[aPoint.column]--;
+				return newV;
+			}
+			v = newV > v ? newV : v;
+			alpha = v > alpha ? v : alpha;
+			board[aPoint.row, aPoint.column] = None;
+			RowStone[aPoint.row]--;
+			ColumnStone[aPoint.column]--;
+		}
 		return v;
 	}
 	private int MinValue(int alpha, int beta, int dep)
@@ -218,9 +230,9 @@ public class AlphaBeta
 			return Evaluate();
 		}
 		int v = INFINITY;
-        Queue<Point> points = new Queue<Point>();
-        points.Enqueue(new Point(lastMove));
-        bool[,] searched = new bool[17, 18];
+		Queue<Point> points = new Queue<Point>();
+		points.Enqueue(new Point(lastMove));
+		bool[,] searched = new bool[17, 18];
 		while (points.Count != 0)
 		{
 			Point aPoint = points.Dequeue();
@@ -242,22 +254,24 @@ public class AlphaBeta
 			{
 				continue;
 			}
-            if (board[aPoint.row, aPoint.column] != None)
-            {
-                continue;
-            }
-            board[aPoint.row, aPoint.column] = X;
-            lastMove = new Point(aPoint);
-            int newV = MinValue(alpha, beta, dep + 1);
-            if (newV <= alpha)
-            {
-                board[aPoint.row, aPoint.column] = None;
-                return newV;
-            }
-            v = newV < v ? newV : v;
-            beta = v < beta ? v : beta;
-            board[aPoint.row, aPoint.column] = None;
-        }
+			board[aPoint.row, aPoint.column] = X;
+			RowStone[aPoint.row]++;
+			ColumnStone[aPoint.column]++;
+			lastMove = new Point(aPoint);
+			int newV = MaxValue(alpha, beta, false, dep + 1);
+			if (newV <= alpha)
+			{
+				board[aPoint.row, aPoint.column] = None;
+				RowStone[aPoint.row]--;
+				ColumnStone[aPoint.column]--;
+				return newV;
+			}
+			v = newV < v ? newV : v;
+			beta = v < beta ? v : beta;
+			board[aPoint.row, aPoint.column] = None;
+			RowStone[aPoint.row]--;
+			ColumnStone[aPoint.column]--;
+		}
 		return v;
 	}
 	private int Evaluate()
@@ -267,8 +281,13 @@ public class AlphaBeta
 		{
 			bool isUpNone = false;
 			bool isDownNone = false;
-			for(int row = 0; row < 17; row++) 
+			int columnStone = ColumnStone[column];
+			for (int row = 0; row < 17; row++) 
 			{
+				if(column < 2) 
+				{
+					break;
+				}
 				isDownNone = false;
 				if (board[row, column] == None) 
 				{
@@ -276,6 +295,7 @@ public class AlphaBeta
 					continue;
 				}
 				int connect = 1;
+				columnStone--;
 				for(int k = 1;k < 5; k++) 
 				{
 					if(row + k > 16) 
@@ -287,12 +307,17 @@ public class AlphaBeta
 					if (board[row, column] == board[row + k, column]) 
 					{
 						connect++;
+						columnStone--;
 					}
 					else 
 					{
 						if (board[row + k, column] == None) 
 						{
 							isDownNone = true;
+						}
+						else 
+						{
+							columnStone--;
 						}
 						row = row + k - 1;
 						isUpNone = false;
@@ -306,14 +331,20 @@ public class AlphaBeta
 		{
 			bool isLeftNone = false;
 			bool isRightNone = false;
+			int rowStone = RowStone[row];
 			for (int column = 0; column < 18; column++)
 			{
+				if(rowStone < 2)
+				{
+					break;
+				}
 				isRightNone = false;
 				if (board[row, column] == None)
 				{
 					isLeftNone = true;
 					continue;
 				}
+				rowStone--;
 				int connect = 1;
 				for (int k = 1; k < 5; k++)
 				{
@@ -326,12 +357,17 @@ public class AlphaBeta
 					if (board[row, column] == board[row, column + k])
 					{
 						connect++;
+						rowStone--;
 					}
 					else
 					{
 						if (board[row, column + k] == None)
 						{
 							isRightNone = true;
+						}
+						else
+						{
+							rowStone--;
 						}
 						column = column + k - 1;
 						isLeftNone = false;
@@ -341,98 +377,179 @@ public class AlphaBeta
 				}
 			}
 		}
-		for(int column = 0; column < 13; column++) 
+		for(int row = 0; row < 12; row++) 
 		{
-			for(int row = 0; row < 12; row++) 
+			int column = 0;
+			for (int i = row; i < 17; i++)
 			{
-				for (int i = row; i < 17; i++)
+				bool isLeftNone = false;
+				bool isRightNone = false;
+				for (int j = column; j < 18; j++)
 				{
-					bool isLeftNone = false;
-					bool isRightNone = false;
-					for (int j = column; j < 18; j++)
+					isRightNone = false;
+					if (board[i, j] == None)
 					{
-						isRightNone = false;
-						if (board[i, j] == None)
+						isLeftNone = true;
+						continue;
+					}
+					int connect = 1;
+					for (int k = 1; k < 5; k++)
+					{
+						if (j + k > 17 || i + k > 16)
 						{
-							isLeftNone = true;
-							continue;
+							j = 17;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+							break;
 						}
-						int connect = 1;
-						for (int k = 1; k < 5; k++)
+						if (board[i, j] == board[i + k, j + k])
 						{
-							if (j + k > 17 || i + k > 16)
+							connect++;
+						}
+						else
+						{
+							if (board[i + k, j + k] == None)
 							{
-								j = 17;
-								v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-								break;
+								isRightNone = true;
 							}
-							if (board[i, j] == board[i + k, j + k])
-							{
-								connect++;
-							}
-							else
-							{
-								if (board[i + k, j + k] == None)
-								{
-									isRightNone = true;
-								}
-								j = j + k - 1;
-								i = i + k - 1;
-								isLeftNone = false;
-								v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-								break;
-							}
+							j = j + k - 1;
+							i = i + k - 1;
+							isLeftNone = false;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));								break;
 						}
 					}
 				}
 			}
 		}
-		for (int column = 17; column > 5; column--)
+		for(int column = 1; column < 13; column++) 
 		{
-			for (int row = 0; row < 12; row++)
+			int row = 0;
+			for (int i = row; i < 17; i++)
 			{
-				for (int i = row; i < 17; i++)
+				bool isLeftNone = false;
+				bool isRightNone = false;
+				for (int j = column; j < 18; j++)
 				{
-					bool isLeftNone = false;
-					bool isRightNone = false;
-					for (int j = column; j >= 0; j--)
+					isRightNone = false;
+					if (board[i, j] == None)
 					{
-						isRightNone = false;
-						if (board[i, j] == None)
+						isLeftNone = true;
+						continue;
+					}
+					int connect = 1;
+					for (int k = 1; k < 5; k++)
+					{
+						if (j + k > 17 || i + k > 16)
 						{
-							isLeftNone = true;
-							continue;
+							j = 17;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+							break;
 						}
-						int connect = 1;
-						for (int k = 1; k < 5; k++)
+						if (board[i, j] == board[i + k, j + k])
 						{
-							if (j - k < 0 || i + k > 16)
+							connect++;
+						}
+						else
+						{
+							if (board[i + k, j + k] == None)
 							{
-								j = 0;
-								v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-								break;
+								isRightNone = true;
 							}
-							if (board[i, j] == board[i + k, j - k])
-							{
-								connect++;
-							}
-							else
-							{
-								if (board[i + k, j - k] == None)
-								{
-									isRightNone = true;
-								}
-								j = j + k + 1;
-								i = i + k - 1;
-								isLeftNone = false;
-								v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-								break;
-							}
+							j = j + k - 1;
+							i = i + k - 1;
+							isLeftNone = false;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
 						}
 					}
 				}
 			}
 		}
+		for (int row = 0; row < 12; row++)
+		{
+			int column = 17;
+			for (int i = row; i < 17; i++)
+			{
+				bool isLeftNone = false;
+				bool isRightNone = false;
+				for (int j = column; j >= 0; j--)
+				{
+					isRightNone = false;
+					if (board[i, j] == None)
+					{
+						isLeftNone = true;
+						continue;
+					}
+					int connect = 1;
+					for (int k = 1; k < 5; k++)
+					{
+						if (j - k < 0 || i + k > 16)
+						{
+							j = 0;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+							break;
+						}
+						if (board[i, j] == board[i + k, j - k])
+						{
+							connect++;
+						}
+						else
+						{
+							if (board[i + k, j - k] == None)
+							{
+								isRightNone = true;
+							}
+							j = j - k + 1;
+							i = i + k - 1;
+							isLeftNone = false;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
+						}
+					}
+				}
+			}
+		}
+		for (int column = 17; column >= 6; column--)
+		{
+			int row = 0;
+			for (int i = row; i < 17; i++)
+			{
+				bool isLeftNone = false;
+				bool isRightNone = false;
+				for (int j = column; j >= 0; j--)
+				{
+					isRightNone = false;
+					if (board[i, j] == None)
+					{
+						isLeftNone = true;
+						continue;
+					}
+					int connect = 1;
+					for (int k = 1; k < 5; k++)
+					{
+						if (j - k < 0 || i + k > 16)
+						{
+							j = 0;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+							break;
+						}
+						if (board[i, j] == board[i + k, j - k])
+						{
+							connect++;
+						}
+						else
+						{
+							if (board[i + k, j - k] == None)
+							{
+								isRightNone = true;
+							}
+							j = j - k + 1;
+							i = i + k - 1;
+							isLeftNone = false;
+							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
+						}
+					}
+				}
+			}
+		}
+
 		return v;
 	}
 	private int CountSocore(int connect, bool isUpNone, bool isDownNone) 
@@ -515,7 +632,7 @@ public class AlphaBeta
 		for (int i = 0; i < 5; i++)
 		{
 			bool isWin = true;
-			if (column < i || row > 13 + i)
+			if (column < i || column > 13 + i)
 			{
 				continue;
 			}
@@ -539,7 +656,7 @@ public class AlphaBeta
 		for (int i = 0; i < 5; i++)
 		{
 			bool isWin = true;
-			if ((row < i || row > 12 + i) || (column < i || row > 13 + i))
+			if ((row < i || row > 12 + i) || (column < i || column > 13 + i))
 			{
 				continue;
 			}
@@ -563,7 +680,7 @@ public class AlphaBeta
 		for (int i = 0; i < 5; i++)
 		{
 			bool isWin = true;
-			if ((row < 4 - i || row > 16 - i) || (column < i || row > 13 + i))
+			if ((row < 4 - i || row > 16 - i) || (column < i || column > 13 + i))
 			{
 				continue;
 			}

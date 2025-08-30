@@ -46,8 +46,6 @@ public partial class Main : Node
 	{
 		GetNode<Button>("First").Hide();
 		GetNode<Button>("Second").Hide();
-		page.tiles[8, 8].SetState(Tile.State.O);
-		page.lastMove = new AlphaBeta.Point(8, 8);
-		page.Moved(false);
+		page.CallAIMove();
 	}
 }
