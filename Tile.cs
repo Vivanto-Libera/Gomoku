@@ -11,7 +11,8 @@ public partial class Tile : TextureRect
 		O,
 		X,
 	}
-	private State state = State.None;
+	[Export]
+	public State state = State.None;
 	public int Row;
 	public int Column;
 	public void SetState(State newState) 
