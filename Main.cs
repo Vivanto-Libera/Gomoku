@@ -11,6 +11,27 @@ public partial class Main : Node
 		GetNode<Button>("Second").Show();
 		page.Reset();
 	}
+	public async void OnGameOver(int whoWin)
+	{
+		page.setAllDisable(true);
+		Label message = GetNode<Label>("Message");
+		if (whoWin == (int)AlphaBeta.WhoWin.OWin)
+		{
+			message.Text = "你输了";
+		}
+		else if (whoWin == (int)AlphaBeta.WhoWin.XWin)
+		{
+			message.Text = "你赢了";
+		}
+		else
+		{
+			message.Text = "平局";
+		}
+		message.Show();
+		await ToSignal(GetTree().CreateTimer(3), Timer.SignalName.Timeout);
+		message.Hide();
+		GameStart();
+	}
 	public override void _Ready()
 	{
 		GameStart();
@@ -25,6 +46,8 @@ public partial class Main : Node
 	{
 		GetNode<Button>("First").Hide();
 		GetNode<Button>("Second").Hide();
-		page.CallAIMove();
+		page.tiles[8, 8].SetState(Tile.State.O);
+		page.lastMove = new AlphaBeta.Point(8, 8);
+		page.Moved(false);
 	}
 }

@@ -69,5 +69,6 @@ theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 64
 text = "你输了"
 
+[connection signal="GameOver" from="Page" to="." method="OnGameOver"]
 [connection signal="pressed" from="First" to="." method="OnFirstPressed"]
 [connection signal="pressed" from="Second" to="." method="OnSecondPressed"]

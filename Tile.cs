@@ -12,9 +12,9 @@ public partial class Tile : TextureRect
 		X,
 	}
 	private State state = State.None;
-    public int Row;
-    public int Column;
-    public void SetState(State newState) 
+	public int Row;
+	public int Column;
+	public void SetState(State newState) 
 	{
 		state = newState;
 		switch (newState) 
@@ -23,11 +23,11 @@ public partial class Tile : TextureRect
 				Texture = null;
 				break;
 			case State.O:
-				Texture = GD.Load<Texture2D>("O.png");
+				Texture = GD.Load<Texture2D>("res://Image/O.png");
 				SetButtonDisable(true);
 				break;
 			case State.X:
-				Texture = GD.Load<Texture2D>("X.png");
+				Texture = GD.Load<Texture2D>("res://Image/X.png");
 				SetButtonDisable(true);
 				break;
 		}
