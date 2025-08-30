@@ -4,7 +4,7 @@ using System;
 public partial class Tile : TextureRect
 {
 	[Signal]
-	public delegate void PlayerPressedEventHandler();
+	public delegate void PlayerPressedEventHandler(int row, int column);
 	public enum State
 	{
 		None,
@@ -12,7 +12,9 @@ public partial class Tile : TextureRect
 		X,
 	}
 	private State state = State.None;
-	public void SetState(State newState) 
+    public int Row;
+    public int Column;
+    public void SetState(State newState) 
 	{
 		state = newState;
 		switch (newState) 
@@ -41,6 +43,6 @@ public partial class Tile : TextureRect
 	public void OnButtonPressed() 
 	{
 		SetState(State.X);
-		EmitSignal(SignalName.PlayerPressed);
+		EmitSignal(SignalName.PlayerPressed, Row, Column);
 	}
 }
