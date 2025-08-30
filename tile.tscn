@@ -1,8 +1,33 @@
-[gd_scene load_steps=2 format=3 uid="uid://dac46wdwtm6kd"]
+[gd_scene load_steps=7 format=3 uid="uid://dac46wdwtm6kd"]
 
 [ext_resource type="Script" uid="uid://d37vn7ukw6imq" path="res://Tile.cs" id="1_n3f48"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n3f48"]
+bg_color = Color(1, 1, 1, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vx4y2"]
+bg_color = Color(1, 1, 1, 0.294118)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a2t34"]
+bg_color = Color(1, 1, 1, 0.196078)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tfor0"]
+bg_color = Color(1, 1, 1, 0.392157)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cpv6t"]
+bg_color = Color(1, 1, 1, 0)
 
 [node name="Tile" type="TextureRect"]
 offset_right = 30.0
 offset_bottom = 30.0
 script = ExtResource("1_n3f48")
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 30.0
+offset_bottom = 30.0
+theme_override_styles/focus = SubResource("StyleBoxFlat_n3f48")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_vx4y2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_a2t34")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_tfor0")
+theme_override_styles/normal = SubResource("StyleBoxFlat_cpv6t")
