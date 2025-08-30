@@ -124,9 +124,13 @@ public class AlphaBeta
 	int maxValue = -INFINITY;
 	public Tile.State[,] board = new Tile.State[17, 18];
 	private const int DEPTH = 2;
+
 	private int[] RowStone = new int[17];
 	private int[] ColumnStone = new int[18];
-	public AlphaBeta(Tile[,] tiles)
+	private int[] DialogStone1 = new int[24];
+    private int[] DialogStone2 = new int[24];
+
+    public AlphaBeta(Tile[,] tiles)
 	{
 		for (int i = 0; i < 17; i++)
 		{
@@ -137,6 +141,25 @@ public class AlphaBeta
 				{
 					RowStone[i]++;
 					ColumnStone[j]++;
+					if(j == 0 && i <= 11) 
+					{
+						DialogStone1[i]++;
+					}
+					else if(j == 17 && i<=11) 
+					{
+						DialogStone2[i]++;
+                    }
+					else if (i == 0 && j != 0 && j != 17)
+					{
+						if (j <= 12)
+						{
+							DialogStone1[j + 11]++;
+						}
+						if (j >= 5)
+						{
+							DialogStone2[28 - j]++;
+						}
+					}
 				}
 			}
 		}
@@ -189,7 +212,29 @@ public class AlphaBeta
 			board[aPoint.row, aPoint.column] = O;
 			RowStone[aPoint.row]++;
 			ColumnStone[aPoint.column]++;
-			lastMove = new Point(aPoint);
+            if (aPoint.column == 0 && aPoint.row <= 11)
+            {
+				DialogStone1[aPoint.row]++;
+            }
+            else if (aPoint.column == 17)
+            {
+                if (aPoint.row <= 11)
+                {
+                    DialogStone2[aPoint.row]++;
+                }
+            }
+            else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+            {
+                if (aPoint.column <= 12)
+                {
+                    DialogStone1[aPoint.column + 11]++;
+                }
+                if (aPoint.column >= 5)
+                {
+                    DialogStone2[28 - aPoint.column]++;
+                }
+            }
+            lastMove = new Point(aPoint);
 			int newV = MinValue(alpha, beta, dep + 1);
 			if (isFirst)
 			{
@@ -204,14 +249,56 @@ public class AlphaBeta
 				board[aPoint.row, aPoint.column] = None;
 				RowStone[aPoint.row]--;
 				ColumnStone[aPoint.column]--;
-				return newV;
+                if (aPoint.column == 0 && aPoint.row <= 11)
+                {
+                    DialogStone1[aPoint.row]--;
+                }
+                else if (aPoint.column == 17)
+                {
+                    if (aPoint.row <= 11)
+                    {
+                        DialogStone2[aPoint.row]--;
+                    }
+                }
+                else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+                {
+                    if (aPoint.column <= 12)
+                    {
+                        DialogStone1[aPoint.column + 11]--;
+                    }
+                    if (aPoint.column >= 5)
+                    {
+                        DialogStone2[28 - aPoint.column]--;
+                    }
+                }
+                return newV;
 			}
 			v = newV > v ? newV : v;
 			alpha = v > alpha ? v : alpha;
 			board[aPoint.row, aPoint.column] = None;
-			RowStone[aPoint.row]--;
-			ColumnStone[aPoint.column]--;
-		}
+            if (aPoint.column == 0 && aPoint.row <= 11)
+            {
+                DialogStone1[aPoint.row]--;
+            }
+            else if (aPoint.column == 17)
+            {
+                if (aPoint.row <= 11)
+                {
+                    DialogStone2[aPoint.row]--;
+                }
+            }
+            else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+            {
+                if (aPoint.column <= 12)
+                {
+                    DialogStone1[aPoint.column + 11]--;
+                }
+                if (aPoint.column >= 5)
+                {
+                    DialogStone2[28 - aPoint.column]--;
+                }
+            }
+        }
 		return v;
 	}
 	private int MinValue(int alpha, int beta, int dep)
@@ -257,21 +344,87 @@ public class AlphaBeta
 			board[aPoint.row, aPoint.column] = X;
 			RowStone[aPoint.row]++;
 			ColumnStone[aPoint.column]++;
-			lastMove = new Point(aPoint);
+            if (aPoint.column == 0 && aPoint.row <= 11)
+            {
+                DialogStone1[aPoint.row]++;
+            }
+            else if (aPoint.column == 17)
+            {
+                if (aPoint.row <= 11)
+                {
+                    DialogStone2[aPoint.row]++;
+                }
+            }
+            else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+            {
+                if (aPoint.column <= 12)
+                {
+                    DialogStone1[aPoint.column + 11]++;
+                }
+                if (aPoint.column >= 5)
+                {
+                    DialogStone2[28 - aPoint.column]++;
+                }
+            }
+            lastMove = new Point(aPoint);
 			int newV = MaxValue(alpha, beta, false, dep + 1);
 			if (newV <= alpha)
 			{
 				board[aPoint.row, aPoint.column] = None;
 				RowStone[aPoint.row]--;
 				ColumnStone[aPoint.column]--;
-				return newV;
+                if (aPoint.column == 0 && aPoint.row <= 11)
+                {
+                    DialogStone1[aPoint.row]--;
+                }
+                else if (aPoint.column == 17)
+                {
+                    if (aPoint.row <= 11)
+                    {
+                        DialogStone2[aPoint.row]--;
+                    }
+                }
+                else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+                {
+                    if (aPoint.column <= 12)
+                    {
+                        DialogStone1[aPoint.column + 11]--;
+                    }
+                    if (aPoint.column >= 5)
+                    {
+                        DialogStone2[28 - aPoint.column]--;
+                    }
+                }
+                return newV;
 			}
 			v = newV < v ? newV : v;
 			beta = v < beta ? v : beta;
 			board[aPoint.row, aPoint.column] = None;
 			RowStone[aPoint.row]--;
 			ColumnStone[aPoint.column]--;
-		}
+            if (aPoint.column == 0 && aPoint.row <= 11)
+            {
+                DialogStone1[aPoint.row]--;
+            }
+            else if (aPoint.column == 17)
+            {
+                if (aPoint.row <= 11)
+                {
+                    DialogStone2[aPoint.row]--;
+                }
+            }
+            else if (aPoint.row == 0 && aPoint.column != 0 && aPoint.column != 17)
+            {
+                if (aPoint.column <= 12)
+                {
+                    DialogStone1[aPoint.column + 11]--;
+                }
+                if (aPoint.column >= 5)
+                {
+                    DialogStone2[28 - aPoint.column]--;
+                }
+            }
+        }
 		return v;
 	}
 	private int Evaluate()
@@ -314,10 +467,6 @@ public class AlphaBeta
 						if (board[row + k, column] == None) 
 						{
 							isDownNone = true;
-						}
-						else 
-						{
-							columnStone--;
 						}
 						row = row + k - 1;
 						isUpNone = false;
@@ -365,10 +514,6 @@ public class AlphaBeta
 						{
 							isRightNone = true;
 						}
-						else
-						{
-							rowStone--;
-						}
 						column = column + k - 1;
 						isLeftNone = false;
 						v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
@@ -379,133 +524,193 @@ public class AlphaBeta
 		}
 		for(int row = 0; row < 12; row++) 
 		{
-			int column = 0;
-			for (int i = row; i < 17; i++)
-			{
-				bool isLeftNone = false;
-				bool isRightNone = false;
-				for (int j = column; j < 18; j++)
-				{
-					isRightNone = false;
-					if (board[i, j] == None)
-					{
-						isLeftNone = true;
-						continue;
-					}
-					int connect = 1;
-					for (int k = 1; k < 5; k++)
-					{
-						if (j + k > 17 || i + k > 16)
-						{
-							j = 17;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-							break;
-						}
-						if (board[i, j] == board[i + k, j + k])
-						{
-							connect++;
-						}
-						else
-						{
-							if (board[i + k, j + k] == None)
-							{
-								isRightNone = true;
-							}
-							j = j + k - 1;
-							i = i + k - 1;
-							isLeftNone = false;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));								break;
-						}
-					}
-				}
-			}
-		}
+            int column = 0;
+            bool isLeftNone = false;
+            bool isRightNone = false;
+            for (int j = column, i = row; j < 18 && i < 17; j++, i++)
+            {
+                int dialogStone = DialogStone1[row];
+                if (dialogStone < 2)
+                {
+                    break;
+                }
+                isRightNone = false;
+                if (board[i, j] == None)
+                {
+                    isLeftNone = true;
+                    continue;
+                }
+                int connect = 1;
+                dialogStone--;
+                for (int k = 1; k < 5; k++)
+                {
+                    if (j + k > 17 || i + k > 16)
+                    {
+                        j = 17;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                        break;
+                    }
+                    if (board[i, j] == board[i + k, j + k])
+                    {
+                        connect++;
+                        dialogStone--;
+                    }
+                    else
+                    {
+                        if (board[i + k, j + k] == None)
+                        {
+                            isRightNone = true;
+                        }
+                        j = j + k - 1;
+                        i = i + k - 1;
+                        isLeftNone = false;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
+                    }
+                }
+            }
+        }
 		for(int column = 1; column < 13; column++) 
 		{
 			int row = 0;
-			for (int i = row; i < 17; i++)
+			bool isLeftNone = false;
+			bool isRightNone = false;
+			for (int j = column, i = row; j < 18 && i < 17; j++, i++)
 			{
-				bool isLeftNone = false;
-				bool isRightNone = false;
-				for (int j = column; j < 18; j++)
+				int dialogStone = DialogStone1[11 + column];
+				if(dialogStone < 2) 
 				{
-					isRightNone = false;
-					if (board[i, j] == None)
+					break;
+				}
+				isRightNone = false;
+				if (board[i, j] == None)
+				{
+					isLeftNone = true;
+					continue;
+				}
+				int connect = 1;
+				dialogStone--;
+				for (int k = 1; k < 5; k++)
+				{
+					if (j + k > 17 || i + k > 16)
 					{
-						isLeftNone = true;
-						continue;
+						j = 17;
+						v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+						break;
 					}
-					int connect = 1;
-					for (int k = 1; k < 5; k++)
+					if (board[i, j] == board[i + k, j + k])
 					{
-						if (j + k > 17 || i + k > 16)
+						connect++;
+						dialogStone--;
+					}
+					else
+					{
+						if (board[i + k, j + k] == None)
 						{
-							j = 17;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-							break;
+							isRightNone = true;
 						}
-						if (board[i, j] == board[i + k, j + k])
-						{
-							connect++;
-						}
-						else
-						{
-							if (board[i + k, j + k] == None)
-							{
-								isRightNone = true;
-							}
-							j = j + k - 1;
-							i = i + k - 1;
-							isLeftNone = false;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
-						}
+						j = j + k - 1;
+						i = i + k - 1;
+						isLeftNone = false;
+						v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
 					}
 				}
 			}
 		}
-		for (int row = 0; row < 12; row++)
-		{
-			int column = 17;
-			for (int i = row; i < 17; i++)
-			{
-				bool isLeftNone = false;
-				bool isRightNone = false;
-				for (int j = column; j >= 0; j--)
-				{
-					isRightNone = false;
-					if (board[i, j] == None)
-					{
-						isLeftNone = true;
-						continue;
-					}
-					int connect = 1;
-					for (int k = 1; k < 5; k++)
-					{
-						if (j - k < 0 || i + k > 16)
-						{
-							j = 0;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
-							break;
-						}
-						if (board[i, j] == board[i + k, j - k])
-						{
-							connect++;
-						}
-						else
-						{
-							if (board[i + k, j - k] == None)
-							{
-								isRightNone = true;
-							}
-							j = j - k + 1;
-							i = i + k - 1;
-							isLeftNone = false;
-							v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
-						}
-					}
-				}
-			}
-		}
+
+        for (int row = 0; row < 12; row++)
+        {
+            int column = 17;
+            bool isLeftNone = false;
+            bool isRightNone = false;
+            for (int j = column, i = row; j < 18 && i < 17; j++, i++)
+            {
+                int dialogStone = DialogStone2[row];
+                if (dialogStone < 2)
+                {
+                    break;
+                }
+                isRightNone = false;
+                if (board[i, j] == None)
+                {
+                    isLeftNone = true;
+                    continue;
+                }
+                int connect = 1;
+                dialogStone--;
+                for (int k = 1; k < 5; k++)
+                {
+                    if (j + k > 17 || i + k > 16)
+                    {
+                        j = 17;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                        break;
+                    }
+                    if (board[i, j] == board[i + k, j + k])
+                    {
+                        connect++;
+                        dialogStone--;
+                    }
+                    else
+                    {
+                        if (board[i + k, j + k] == None)
+                        {
+                            isRightNone = true;
+                        }
+                        j = j + k - 1;
+                        i = i + k - 1;
+                        isLeftNone = false;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
+                    }
+                }
+            }
+        }
+        for (int column = 17; column >= 16; column--)
+        {
+            int row = 0;
+            bool isLeftNone = false;
+            bool isRightNone = false;
+            for (int j = column, i = row; j >= 0 && i < 17; j--, i++)
+            {
+                int dialogStone = DialogStone2[28 - column];
+                if (dialogStone < 2)
+                {
+                    break;
+                }
+                isRightNone = false;
+                if (board[i, j] == None)
+                {
+                    isLeftNone = true;
+                    continue;
+                }
+                int connect = 1;
+                dialogStone--;
+                for (int k = 1; k < 5; k++)
+                {
+                    if (j - k < 0 || i + k > 16)
+                    {
+                        j = 0;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone));
+                        break;
+                    }
+                    if (board[i, j] == board[i + k, j - k])
+                    {
+                        connect++;
+                    }
+                    else
+                    {
+                        if (board[i + k, j - k] == None)
+                        {
+                            isRightNone = true;
+                        }
+                        j = j - k + 1;
+                        i = i + k - 1;
+                        isLeftNone = false;
+                        v += WhosScore(board[row, column], CountSocore(connect, isLeftNone, isRightNone)); break;
+                    }
+                }
+            }
+        }
+        
 		for (int column = 17; column >= 6; column--)
 		{
 			int row = 0;
