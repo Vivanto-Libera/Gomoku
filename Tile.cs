@@ -20,10 +20,12 @@ public partial class Tile : TextureRect
 				break;
 			case State.O:
 				Texture = GD.Load<Texture2D>("O.png");
+				GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, true);
 				break;
 			case State.X:
 				Texture = GD.Load<Texture2D>("X.png");
-				break;
+                GetNode<Button>("Button").SetDeferred(Button.PropertyName.Disabled, true);
+                break;
 		}
 	}
 	public State GetState()
