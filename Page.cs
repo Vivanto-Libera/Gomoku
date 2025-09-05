@@ -41,12 +41,7 @@ public partial class Page : TextureRect
 		}
 		if (isPlayer)
 		{
-			setAllDisable(true);
 			CallAIMove();
-		}
-		else
-		{
-			setAllDisable(false);
 		}
 	}
 	public void Reset() 
