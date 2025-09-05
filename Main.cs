@@ -1,9 +1,17 @@
+//Created by vivanto(E-Mail:1425078256@qq.com)(GitHub:Vivanto-Libera)
 using Godot;
 using System;
 
 public partial class Main : Node
 {
 	public Page page = new Page();
+
+	public override void _Ready()
+	{
+		page = GetNode<Page>("Page");
+		GameStart();
+	}
+
 	public void GameStart() 
 	{
 		GetNode<Button>("First").Show();
@@ -31,11 +39,7 @@ public partial class Main : Node
 		message.Hide();
 		GameStart();
 	}
-	public override void _Ready()
-	{
-		page = GetNode<Page>("Page");
-		GameStart();
-	}
+
 	public void OnFirstPressed()
 	{
 		GetNode<Button>("First").Hide();

@@ -15,9 +15,9 @@ public partial class Page : TextureRect
 
 	public Tile[,] tiles = new Tile[17, 18];
 	public AlphaBeta.Point lastMove = new AlphaBeta.Point(-1, -1);
-	public async void CallAIMove()
+	public void CallAIMove()
 	{
-		await Task.Run(() => AIMove());
+		CallDeferred("AIMove");
 	}
 	public void AIMove()
 	{
@@ -118,17 +118,19 @@ public class AlphaBeta
 
 	int[] BFSX = { 1, 0, -1, 0, 1, 1, -1, -1};
 	int[] BFSY = { 0, 1, 0, -1, 1, -1, 1, -1 };
-	const int INFINITY = 10000;
+
+	private const int INFINITY = 10000;
+	private const int DEPTH = 2;
+
 	Point point = new Point(-1, -1);
 	Point lastMove = new Point(8, 8);
 	int maxValue = -INFINITY;
 	public Tile.State[,] board = new Tile.State[17, 18];
-	private const int DEPTH = 2;
 
 	private int[] RowStone = new int[17];
 	private int[] ColumnStone = new int[18];
-	private int[] DialogStone1 = new int[24];
-	private int[] DialogStone2 = new int[24];
+	private int[] DiagonalStone1 = new int[24];
+	private int[] DiagonalStone2 = new int[24];
 
 	public AlphaBeta(Tile[,] tiles)
 	{
@@ -145,22 +147,22 @@ public class AlphaBeta
 					{
 						if(i >= j) 
 						{
-							DialogStone1[i - j]++;
+							DiagonalStone1[i - j]++;
 						}
 						else 
 						{
-							DialogStone1[j - i + 11]++;
+							DiagonalStone1[j - i + 11]++;
 						}
 					}
 					if (i + j >= 5 && i + j <= 28)
 					{
 						if (i + j >= 17)
 						{
-							DialogStone2[i + j - 17]++;
+							DiagonalStone2[i + j - 17]++;
 						}
 						else
 						{
-							DialogStone2[28 - i - j]++;
+							DiagonalStone2[28 - i - j]++;
 						}
 					}
 				}
@@ -215,8 +217,8 @@ public class AlphaBeta
 			board[aPoint.row, aPoint.column] = O;
 			RowStone[aPoint.row]++;
 			ColumnStone[aPoint.column]++;
-			int dialogStone1 = 0;
-			int dialogStone2 = 0;
+			int diagonalStone1 = 0;
+			int diagonalStone2 = 0;
 			int stone1Num = 0;
 			int stone2Num = 0;
 			if (aPoint.row - aPoint.column <= 11 && aPoint.column - aPoint.row <= 12)
@@ -229,8 +231,8 @@ public class AlphaBeta
 				{
 					stone1Num = aPoint.column - aPoint.row + 11;
 				}
-				DialogStone1[stone1Num]++;
-				dialogStone1 = -1;
+				DiagonalStone1[stone1Num]++;
+				diagonalStone1 = -1;
 			}
 			if (aPoint.row + aPoint.column >= 5 && aPoint.row + aPoint.column <= 28)
 			{
@@ -242,8 +244,8 @@ public class AlphaBeta
 				{
 					stone2Num = 28 - aPoint.column - aPoint.row;
 				}
-				DialogStone2[stone2Num]++;
-				dialogStone2 = -1;
+				DiagonalStone2[stone2Num]++;
+				diagonalStone2 = -1;
 			}
 			lastMove = new Point(aPoint);
 			int newV = MinValue(alpha, beta, dep + 1);
@@ -260,16 +262,17 @@ public class AlphaBeta
 				board[aPoint.row, aPoint.column] = None;
 				RowStone[aPoint.row]--;
 				ColumnStone[aPoint.column]--;
-				DialogStone1[stone1Num] += dialogStone1;
-				DialogStone2[stone2Num] += dialogStone2;
+				DiagonalStone1[stone1Num] += diagonalStone1;
+				DiagonalStone2[stone2Num] += diagonalStone2;
+				return newV;
 			}
 			v = newV > v ? newV : v;
 			alpha = v > alpha ? v : alpha;
 			board[aPoint.row, aPoint.column] = None;
 			RowStone[aPoint.row]--;
 			ColumnStone[aPoint.column]--;
-			DialogStone1[stone1Num] += dialogStone1;
-			DialogStone2[stone2Num] += dialogStone2;
+			DiagonalStone1[stone1Num] += diagonalStone1;
+			DiagonalStone2[stone2Num] += diagonalStone2;
 		}
 		return v;
 	}
@@ -316,8 +319,8 @@ public class AlphaBeta
 			board[aPoint.row, aPoint.column] = X;
 			RowStone[aPoint.row]++;
 			ColumnStone[aPoint.column]++;
-			int dialogStone1 = 0;
-			int dialogStone2 = 0;
+			int diagonalStone1 = 0;
+			int diagonalStone2 = 0;
 			int stone1Num = 0;
 			int stone2Num = 0;
 			if (aPoint.row - aPoint.column <= 11 && aPoint.column - aPoint.row <= 12)
@@ -330,8 +333,8 @@ public class AlphaBeta
 				{
 					stone1Num = aPoint.column - aPoint.row + 11;
 				}
-				DialogStone1[stone1Num]++;
-				dialogStone1 = -1;
+				DiagonalStone1[stone1Num]++;
+				diagonalStone1 = -1;
 			}
 			if (aPoint.row + aPoint.column >= 5 && aPoint.row + aPoint.column <= 28)
 			{
@@ -343,8 +346,8 @@ public class AlphaBeta
 				{
 					stone2Num = 28 - aPoint.column - aPoint.row;
 				}
-				DialogStone2[stone2Num]++;
-				dialogStone2 = -1;
+				DiagonalStone2[stone2Num]++;
+				diagonalStone2 = -1;
 			}
 			lastMove = new Point(aPoint);
 			int newV = MaxValue(alpha, beta, false, dep + 1);
@@ -353,8 +356,8 @@ public class AlphaBeta
 				board[aPoint.row, aPoint.column] = None;
 				RowStone[aPoint.row]--;
 				ColumnStone[aPoint.column]--;
-				DialogStone1[stone1Num] += dialogStone1;
-				DialogStone2[stone2Num] += dialogStone2;
+				DiagonalStone1[stone1Num] += diagonalStone1;
+				DiagonalStone2[stone2Num] += diagonalStone2;
 				return newV;
 			}
 			v = newV < v ? newV : v;
@@ -362,8 +365,8 @@ public class AlphaBeta
 			board[aPoint.row, aPoint.column] = None;
 			RowStone[aPoint.row]--;
 			ColumnStone[aPoint.column]--;
-			DialogStone1[stone1Num] += dialogStone1;
-			DialogStone2[stone2Num] += dialogStone2;
+			DiagonalStone1[stone1Num] += diagonalStone1;
+			DiagonalStone2[stone2Num] += diagonalStone2;
 		}
 		return v;
 	}
@@ -468,10 +471,10 @@ public class AlphaBeta
 			int column = 0;
 			bool isLeftNone = false;
 			bool isRightNone = false;
-			int dialogStone = DialogStone1[row];
+			int diagonalStone = DiagonalStone1[row];
 			for (int j = column, i = row; j < 18 && i < 17; j++, i++)
 			{
-				if (dialogStone < 2)
+				if (diagonalStone < 2)
 				{
 					break;
 				}
@@ -482,7 +485,7 @@ public class AlphaBeta
 					continue;
 				}
 				int connect = 1;
-				dialogStone--;
+				diagonalStone--;
 				for (int k = 1; k < 5; k++)
 				{
 					if (j + k > 17 || i + k > 16)
@@ -495,7 +498,7 @@ public class AlphaBeta
 					if (board[i, j] == board[i + k, j + k])
 					{
 						connect++;
-						dialogStone--;
+						diagonalStone--;
 					}
 					else
 					{
@@ -517,10 +520,10 @@ public class AlphaBeta
 			int row = 0;
 			bool isLeftNone = false;
 			bool isRightNone = false;
-			int dialogStone = DialogStone1[11 + column];
+			int diagonalStone = DiagonalStone1[11 + column];
 			for (int j = column, i = row; j < 18 && i < 17; j++, i++)
 			{
-				if(dialogStone < 2) 
+				if(diagonalStone < 2) 
 				{
 					break;
 				}
@@ -531,7 +534,7 @@ public class AlphaBeta
 					continue;
 				}
 				int connect = 1;
-				dialogStone--;
+				diagonalStone--;
 				for (int k = 1; k < 5; k++)
 				{
 					if (j + k > 17 || i + k > 16)
@@ -544,7 +547,7 @@ public class AlphaBeta
 					if (board[i, j] == board[i + k, j + k])
 					{
 						connect++;
-						dialogStone--;
+						diagonalStone--;
 					}
 					else
 					{
@@ -567,10 +570,10 @@ public class AlphaBeta
 			int column = 17;
 			bool isLeftNone = false;
 			bool isRightNone = false;
-			int dialogStone = DialogStone2[row];
+			int diagonalStone = DiagonalStone2[row];
 			for (int j = column, i = row; j >= 0 && i < 17; j--, i++)
 			{
-				if (dialogStone < 2)
+				if (diagonalStone < 2)
 				{
 					break;
 				}
@@ -581,7 +584,7 @@ public class AlphaBeta
 					continue;
 				}
 				int connect = 1;
-				dialogStone--;
+				diagonalStone--;
 				for (int k = 1; k < 5; k++)
 				{
 					if (j - k < 0 || i + k > 16)
@@ -615,10 +618,10 @@ public class AlphaBeta
 			int row = 0;
 			bool isLeftNone = false;
 			bool isRightNone = false;
-			int dialogStone = DialogStone2[28 - column];
+			int diagonalStone = DiagonalStone2[28 - column];
 			for (int j = column, i = row; j >= 0 && i < 17; j--, i++)
 			{
-				if (dialogStone < 2)
+				if (diagonalStone < 2)
 				{
 					break;
 				}
@@ -629,7 +632,7 @@ public class AlphaBeta
 					continue;
 				}
 				int connect = 1;
-				dialogStone--;
+				diagonalStone--;
 				for (int k = 1; k < 5; k++)
 				{
 					if (j - k < 0 || i + k > 16)
