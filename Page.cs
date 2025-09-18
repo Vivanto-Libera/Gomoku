@@ -68,6 +68,10 @@ public partial class Page : TextureRect
 			char row = (char)((int)'A' + i);
 			for (int j = 0; j < 18; j++)
 			{
+				if (tiles[i, j].GetState() != None) 
+				{
+					continue;
+				}
 				tiles[i, j].SetButtonDisable(isDisable);
 			}
 		}
